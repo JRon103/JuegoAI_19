@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 
 # Inicializar Pygame
 pygame.init()
@@ -18,11 +19,14 @@ CANTIDAD_CASILLAS = 15
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption('Monito Móvil')
 
+# Obtener la ruta de la carpeta del script
+ruta_carpeta = os.path.dirname(__file__)
+
 # Cargar imágenes del monito para cada dirección
-monito_arriba_img = pygame.image.load('monito_arriba.png')
-monito_abajo_img = pygame.image.load('monito_abajo.png')
-monito_izquierda_img = pygame.image.load('monito_izquierda.png')
-monito_derecha_img = pygame.image.load('monito_derecha.png')
+monito_abajo_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '1.png'))
+monito_izquierda_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '5.png'))
+monito_derecha_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '9.png'))
+monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '13.png'))
 
 # Cargar imagen del objetivo
 objetivo_img = pygame.Surface((TAMANO_CASILLA, TAMANO_CASILLA))
