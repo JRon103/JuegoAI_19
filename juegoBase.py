@@ -1,8 +1,38 @@
 import pygame
 import sys
+import os
 
 # Inicializar Pygame
 pygame.init()
+
+# Definición de métodos para los movimientos hacia arriba, abajo, izq y der
+def mover (orientacion, steps):
+
+    match orientacion:
+        case 'arriba':
+            img = 13
+        case 'abajo':
+            img = 1
+        case 'izquierda':
+            img = 5
+        case 'derecha':
+            img = 9
+    
+    img += (steps % 4)
+    
+    match lastItem:
+        case 0:
+            monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', f'{img}.png'))
+        case 1:
+            monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata_hdmi', f'{img}.png'))
+    
+    return monito_arriba_img
+
+
+# Último item tomado (0 = ninguno, 1 = hdmi, ...)
+lastItem = 0
+lastDirection = ''
+numSteps = 0
 
 # Definir colores
 BLANCO = (255, 255, 255)
@@ -18,11 +48,14 @@ CANTIDAD_CASILLAS = 15
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption('Monito Móvil')
 
+# Obtener la ruta de la carpeta del script
+ruta_carpeta = os.path.dirname(__file__)
+
 # Cargar imágenes del monito para cada dirección
-monito_arriba_img = pygame.image.load('monito_arriba.png')
-monito_abajo_img = pygame.image.load('monito_abajo.png')
-monito_izquierda_img = pygame.image.load('monito_izquierda.png')
-monito_derecha_img = pygame.image.load('monito_derecha.png')
+monito_abajo_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '1.png'))
+monito_izquierda_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '5.png'))
+monito_derecha_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '9.png'))
+monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '13.png'))
 
 # Cargar imagen del objetivo
 objetivo_img = pygame.Surface((TAMANO_CASILLA, TAMANO_CASILLA))
@@ -106,13 +139,40 @@ while True:
 
     # Cambiar la imagen del monito según la dirección
     if direccion == "arriba":
-        monito_img = monito_arriba_img
+        if lastDirection == "arriba":
+            numSteps += 1
+        else:
+            numSteps = 0
+            lastDirection = "arriba"
+
+        monito_img = mover("arriba", numSteps)
+
     elif direccion == "abajo":
-        monito_img = monito_abajo_img
+        if lastDirection == "abajo":
+            numSteps += 1
+        else:
+            numSteps = 0
+            lastDirection = "abajo"
+
+        monito_img = mover("abajo", numSteps)
+
     elif direccion == "izquierda":
-        monito_img = monito_izquierda_img
+        if lastDirection == "izquierda":
+            numSteps += 1
+        else:
+            numSteps = 0
+            lastDirection = "izquierda"
+
+        monito_img = mover("izquierda", numSteps)
+
     elif direccion == "derecha":
-        monito_img = monito_derecha_img
+        if lastDirection == "derecha":
+            numSteps += 1
+        else:
+            numSteps = 0
+            lastDirection = "derecha"
+
+        monito_img = mover("derecha", numSteps)
 
             # Verificar colisión con objetivos
     objetivos_capturados_temp = []  # Lista temporal para almacenar objetivos capturados en este ciclo
@@ -120,6 +180,7 @@ while True:
     for objetivo in objetivos:
         if (posicion_x, posicion_y) == objetivo:
             objetivos_capturados_temp.append(objetivo)
+            lastItem = 1
 
     # Eliminar objetivos capturados de la lista principal
     objetivos = [objetivo for objetivo in objetivos if objetivo not in objetivos_capturados_temp]
