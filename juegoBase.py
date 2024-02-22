@@ -33,6 +33,7 @@ def mover (orientacion, steps):
 lastItem = 0
 lastDirection = ''
 numSteps = 0
+enemigo1 = 0
 
 # Definir colores
 BLANCO = (255, 255, 255)
@@ -211,6 +212,10 @@ while True:
     # Limpiar la pantalla
     pantalla.fill(BLANCO)
 
+    # Imagen del ENEMIGO
+    imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + enemigo1 % 10}.png'))
+    enemigo1 += 1
+
     # Dibujar el monito en la pantalla
     pantalla.blit(monito_img, monito_rect)
 
@@ -220,7 +225,8 @@ while True:
             if campo_de_juego[fila][columna] == 1:
                 pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
             elif campo_de_juego[fila][columna] == 2:
-                pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
+                #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
+                pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
             elif (columna, fila) in objetivos:
                 pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
