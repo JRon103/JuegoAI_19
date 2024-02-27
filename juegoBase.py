@@ -1,6 +1,8 @@
 import pygame
 import sys
 import os
+import graficos
+import random
 
 # Inicializar Pygame
 pygame.init()
@@ -9,36 +11,6 @@ pygame.init()
 fuente = pygame.font.SysFont('Arial', 20)
 fuente_objetivos = pygame.font.SysFont('Arial', 20)
 objetivos_texto = 0
-
-# Definición de métodos para los movimientos hacia arriba, abajo, izq y der
-def mover (orientacion, steps):
-
-    match orientacion:
-        case 'arriba':
-            img = 13
-        case 'abajo':
-            img = 1
-        case 'izquierda':
-            img = 5
-        case 'derecha':
-            img = 9
-    
-    img += (steps % 4)
-    
-    match lastItem:
-        case 0:
-            monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', f'{img}.png'))
-        case 1:
-            monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata_hdmi', f'{img}.png'))
-    
-    return monito_arriba_img
-
-
-# Último item tomado (0 = ninguno, 1 = hdmi, ...)
-lastItem = 0
-lastDirection = ''
-numSteps = 0
-enemigo1 = 0
 
 # Definir colores
 BLANCO = (255, 255, 255)
@@ -54,24 +26,17 @@ CANTIDAD_CASILLAS = 15
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption('Monito Móvil')
 
-# Obtener la ruta de la carpeta del script
-ruta_carpeta = os.path.dirname(__file__)
-
-# Cargar imágenes del monito para cada dirección
-monito_abajo_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '1.png'))
-monito_izquierda_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '5.png'))
-monito_derecha_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '9.png'))
-monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '13.png'))
 
 # Cargar imagen del objetivo
 objetivo_img = pygame.Surface((TAMANO_CASILLA, TAMANO_CASILLA))
-objetivo_img.fill(VERDE)
+objetivo_img = graficos.objetivo_cable_img
 
 # Obtener rectángulo del monito
+monito_arriba_img = graficos.monito_arriba_img
 monito_rect = monito_arriba_img.get_rect()
 
 # Posición inicial del monito en la cuadrícula
-posicion_x, posicion_y = 0, 0
+posicion_x, posicion_y =  random.randrange(0,15), random.randrange(0,15)
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
 
@@ -106,8 +71,11 @@ campo_de_juego = [
 ]
 
 
+#fix tonto para que donde salga el mono sea una casilla valida
+campo_de_juego[posicion_y][posicion_x]=0
+
 # Lista de objetivos (puntos verdes) con coordenadas (x, y)
-objetivos = [(3, 2), (10, 4), (5, 8)]
+objetivos = [(3, 2), (10, 4), (5, 8), (6,4)]
 
 # Contador de objetivos capturados
 #FIX TONTO, porque se esta sumando de dos en dos
@@ -147,40 +115,40 @@ while True:
 
     # Cambiar la imagen del monito según la dirección
     if direccion == "arriba":
-        if lastDirection == "arriba":
-            numSteps += 1
+        if graficos.lastDirection == "arriba":
+            graficos.numSteps += 1
         else:
-            numSteps = 0
-            lastDirection = "arriba"
+            graficos.numSteps = 0
+            graficos.lastDirection = "arriba"
 
-        monito_img = mover("arriba", numSteps)
+        monito_img = graficos.mover("arriba", graficos.numSteps)
 
     elif direccion == "abajo":
-        if lastDirection == "abajo":
-            numSteps += 1
+        if graficos.lastDirection == "abajo":
+            graficos.numSteps += 1
         else:
-            numSteps = 0
-            lastDirection = "abajo"
+            graficos.numSteps = 0
+            graficos.lastDirection = "abajo"
 
-        monito_img = mover("abajo", numSteps)
+        monito_img = graficos.mover("abajo", graficos.numSteps)
 
     elif direccion == "izquierda":
-        if lastDirection == "izquierda":
-            numSteps += 1
+        if graficos.lastDirection == "izquierda":
+            graficos.numSteps += 1
         else:
-            numSteps = 0
-            lastDirection = "izquierda"
+            graficos.numSteps = 0
+            graficos.lastDirection = "izquierda"
 
-        monito_img = mover("izquierda", numSteps)
+        monito_img = graficos.mover("izquierda", graficos.numSteps)
 
     elif direccion == "derecha":
-        if lastDirection == "derecha":
-            numSteps += 1
+        if graficos.lastDirection == "derecha":
+            graficos.numSteps += 1
         else:
-            numSteps = 0
-            lastDirection = "derecha"
+            graficos.numSteps = 0
+            graficos.lastDirection = "derecha"
 
-        monito_img = mover("derecha", numSteps)
+        monito_img = graficos.mover("derecha", graficos.numSteps)
 
 
       # Verificar colisión con enemigos
@@ -204,7 +172,7 @@ while True:
     for objetivo in objetivos:
         if (posicion_x, posicion_y) == objetivo:
             objetivos_capturados_temp.append(objetivo)
-            lastItem = 1
+            graficos.lastItem = 1
 
     # Eliminar objetivos capturados de la lista principal
     objetivos = [objetivo for objetivo in objetivos if objetivo not in objetivos_capturados_temp]
@@ -239,17 +207,14 @@ while True:
     texto_vidas = fuente.render(f'Vidas: {vidas}', True, (0, 0, 0))  # color negro en RGB
     pantalla.blit(texto_vidas, (200, 610))  # Ajusta las coordenadas 
 
-    # Dibujar el texto de las vidas en la pantalla
-    texto_vidas = fuente.render(f'Vidas: {vidas}', True, (255, 255, 255))
-    pantalla.blit(texto_vidas, (10, 10))
-
     # Dibujar el texto de objetivos capturados en la pantalla
     texto_objetivos = fuente_objetivos.render(f'Objetivos: {len(objetivos)}', True, (0, 0, 0))
-    pantalla.blit(texto_objetivos, (100, 610))
+    pantalla.blit(texto_objetivos, (80, 610))
 
     # Imagen del ENEMIGO
-    imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + enemigo1 % 10}.png'))
-    enemigo1 += 1
+    imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + graficos.enemigo1 % 10}.png'))
+    objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
+    graficos.enemigo1 += 1
 
     # Dibujar el monito en la pantalla
     pantalla.blit(monito_img, monito_rect)
