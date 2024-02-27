@@ -5,6 +5,11 @@ import os
 # Inicializar Pygame
 pygame.init()
 
+
+fuente = pygame.font.SysFont('Arial', 20)
+fuente_objetivos = pygame.font.SysFont('Arial', 20)
+objetivos_texto = 0
+
 # Definición de métodos para los movimientos hacia arriba, abajo, izq y der
 def mover (orientacion, steps):
 
@@ -42,7 +47,7 @@ ROJO = (255, 0, 0)
 VERDE = (0, 255, 0)
 
 # Configurar la pantalla
-ANCHO, ALTO = 600, 600
+ANCHO, ALTO = 650, 650
 TAMANO_CASILLA = 40
 CANTIDAD_CASILLAS = 15
 
@@ -88,13 +93,13 @@ campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 3, 3, 3, 0, 1, 0, 0, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -177,6 +182,22 @@ while True:
 
         monito_img = mover("derecha", numSteps)
 
+
+      # Verificar colisión con enemigos
+    if campo_de_juego[posicion_y][posicion_x] == 2:
+        # El jugador ha tocado a un enemigo
+        vidas -= 1
+        print(f"Oh no! Tocaste a un enemigo. Vidas restantes: {vidas}")
+
+        # Eliminar enemigo de la matriz
+        campo_de_juego[posicion_y][posicion_x] = 0  # 0 representa una casilla normal
+
+        # Verificar si el jugador se quedó sin vidas
+        if vidas <= 0:
+            print("¡Game Over! Te quedaste sin vidas.")
+            pygame.quit()
+            sys.exit()
+
             # Verificar colisión con objetivos
     objetivos_capturados_temp = []  # Lista temporal para almacenar objetivos capturados en este ciclo
 
@@ -214,6 +235,18 @@ while True:
     # Limpiar la pantalla
     pantalla.fill(BLANCO)
 
+    # Dibujar el texto de las vidas en la pantalla
+    texto_vidas = fuente.render(f'Vidas: {vidas}', True, (0, 0, 0))  # color negro en RGB
+    pantalla.blit(texto_vidas, (200, 610))  # Ajusta las coordenadas 
+
+    # Dibujar el texto de las vidas en la pantalla
+    texto_vidas = fuente.render(f'Vidas: {vidas}', True, (255, 255, 255))
+    pantalla.blit(texto_vidas, (10, 10))
+
+    # Dibujar el texto de objetivos capturados en la pantalla
+    texto_objetivos = fuente_objetivos.render(f'Objetivos: {len(objetivos)}', True, (0, 0, 0))
+    pantalla.blit(texto_objetivos, (100, 610))
+
     # Imagen del ENEMIGO
     imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + enemigo1 % 10}.png'))
     enemigo1 += 1
@@ -224,13 +257,13 @@ while True:
     # Dibujar la cuadrícula y obstáculos
     for fila in range(CANTIDAD_CASILLAS):
         for columna in range(CANTIDAD_CASILLAS):
-            if campo_de_juego[fila][columna] == 1:
-                pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
-            elif campo_de_juego[fila][columna] == 2:
-                #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
-                pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
-            elif (columna, fila) in objetivos:
-                pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+             if campo_de_juego[fila][columna] == 1:
+                 pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
+             elif campo_de_juego[fila][columna] == 2:
+                 #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))#el cuadro rojo feo de antes
+                 pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+             elif (columna, fila) in objetivos:
+                 pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
     # Actualizar la pantalla
     pygame.display.flip()
