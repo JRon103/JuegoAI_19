@@ -66,7 +66,7 @@ objetivo_img.fill(VERDE)
 monito_rect = monito_arriba_img.get_rect()
 
 # Posición inicial del monito en la cuadrícula
-posicion_x, posicion_y = 1, 1
+posicion_x, posicion_y = 0, 0
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
 
@@ -91,7 +91,7 @@ campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 3, 3, 3, 0, 1, 0, 0, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
@@ -105,7 +105,9 @@ campo_de_juego = [
 objetivos = [(3, 2), (10, 4), (5, 8)]
 
 # Contador de objetivos capturados
-objetivos_capturados = 0
+#FIX TONTO, porque se esta sumando de dos en dos
+#objetivos_capturados = 0
+objetivos_capturados = len(objetivos)*-1
 
 # Bucle principal
 while True:
@@ -194,7 +196,7 @@ while True:
 
     # Verificar si se han capturado todos los objetivos
     if objetivos_capturados >= len(objetivos):
-        print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
+        print("Felicidades! Has capturado todos los objetivos. Ganaste!")
         pygame.quit()
         sys.exit()
 
