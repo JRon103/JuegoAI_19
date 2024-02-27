@@ -36,3 +36,5 @@ ruta_carpeta = os.path.dirname(__file__)
 # Cargar imágenes del monito para cada dirección
 monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata', '13.png'))
 
+objetivo_cable_img = pygame.image.load(os.path.join(ruta_carpeta, 'Objetos', 'c1.png'))
+
