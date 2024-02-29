@@ -4,6 +4,15 @@ import os
 import graficos
 import random
 
+'''
+    Tipos de piso en el mapa:
+
+    0: Normal
+    1: Obstaculo (Pared, Columnas)
+    2: Enemigo
+    3: Piso Agua
+'''
+
 # Inicializar Pygame
 pygame.init()
 
@@ -70,6 +79,7 @@ campo_de_juego = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
+#print(campo_de_juego[][1-2])
 
 #fix tonto para que donde salga el mono sea una casilla valida
 campo_de_juego[posicion_y][posicion_x]=0
@@ -82,12 +92,16 @@ objetivos = [(3, 2), (10, 4), (5, 8), (6,4)]
 #objetivos_capturados = 0
 objetivos_capturados = len(objetivos)*-1
 
+
+
+
 # Bucle principal
 while True:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
 
     # Obtener teclas presionadas
     teclas = pygame.key.get_pressed()
@@ -214,24 +228,56 @@ while True:
     # Imagen del ENEMIGO
     imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + graficos.enemigo1 % 10}.png'))
     objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
-    graficos.enemigo1 += 1
+    
 
-    # Dibujar el monito en la pantalla
-    pantalla.blit(monito_img, monito_rect)
-
-    # Dibujar la cuadrícula y obstáculos
+    # Desplegar imagenes en cada casilla del mapa
     for fila in range(CANTIDAD_CASILLAS):
         for columna in range(CANTIDAD_CASILLAS):
-             if campo_de_juego[fila][columna] == 1:
-                 pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
-             elif campo_de_juego[fila][columna] == 2:
-                 #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))#el cuadro rojo feo de antes
-                 pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
-             elif (columna, fila) in objetivos:
-                 pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+            # Piso normal
+            if campo_de_juego[fila][columna] == 0:
+                piso = graficos.tipo_piso(campo_de_juego[fila][columna])
+                pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+                # Piso + objetivo
+                if (columna, fila) in objetivos:                
+                    pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))                
+
+
+            # Piso normal + objetos
+            elif campo_de_juego[fila][columna] == 1:
+                piso = graficos.tipo_piso(campo_de_juego[fila][columna])
+                pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+                objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
+
+            # Piso normal + obsatculo
+            elif campo_de_juego[fila][columna] == 2:
+                piso = graficos.tipo_piso(0) 
+                pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+                pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+            # Piso de agua
+            elif campo_de_juego[fila][columna] == 3:
+                piso = graficos.tipo_piso(2) 
+                pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+            
+                #pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
+
+    graficos.enemigo1 += 1
+    # Dibujar el monito en la pantalla
+    pantalla.blit(monito_img, monito_rect)
 
     # Actualizar la pantalla
     pygame.display.flip()
 
     # Controlar la velocidad de la ejecución
     pygame.time.Clock().tick(10)
+
+
+
+                #pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
+             #elif :
+                 #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))#el cuadro rojo feo de antes
+                 #pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
