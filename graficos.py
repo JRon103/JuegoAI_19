@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 
 # Definición de método para los movimientos hacia arriba, abajo, izq y der
 def mover (orientacion, steps):
@@ -23,6 +24,20 @@ def mover (orientacion, steps):
             monito_arriba_img = pygame.image.load(os.path.join(ruta_carpeta, 'caminata_hdmi', f'{img}.png'))
     
     return monito_arriba_img
+
+def tipo_piso (campo):
+
+    imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'pisos_pared', 'piso1.png'))
+
+    match campo:
+        case 0:
+            imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'pisos_pared', 'piso1.png'))
+        case 1:
+            imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'pisos_pared', 'I.png'))
+        case 2:
+            imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'water', 'piso2water.png'))
+    
+    return imagen_piso
 
 # Último item tomado (0 = ninguno, 1 = hdmi, ...)
 lastItem = 0
