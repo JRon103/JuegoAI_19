@@ -28,8 +28,8 @@ ROJO = (255, 0, 0)
 VERDE = (0, 255, 0)
 
 # Configurar la pantalla
-ANCHO, ALTO = 650, 650
-TAMANO_CASILLA = 40
+ANCHO, ALTO = 850, 750
+TAMANO_CASILLA = 45
 CANTIDAD_CASILLAS = 15
 graficos.max_casillas = CANTIDAD_CASILLAS
 
@@ -221,11 +221,11 @@ while True:
 
     # Dibujar el texto de las vidas en la pantalla
     texto_vidas = fuente.render(f'Vidas: {vidas}', True, (0, 0, 0))  # color negro en RGB
-    pantalla.blit(texto_vidas, (200, 610))  # Ajusta las coordenadas 
+    pantalla.blit(texto_vidas, (200, 710))  # Ajusta las coordenadas 
 
     # Dibujar el texto de objetivos capturados en la pantalla
     texto_objetivos = fuente_objetivos.render(f'Objetivos: {len(objetivos)}', True, (0, 0, 0))
-    pantalla.blit(texto_objetivos, (80, 610))
+    pantalla.blit(texto_objetivos, (80, 710))
 
     # Imagen del ENEMIGO
     imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + graficos.enemigo1 % 10}.png'))
