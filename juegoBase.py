@@ -31,6 +31,7 @@ VERDE = (0, 255, 0)
 ANCHO, ALTO = 650, 650
 TAMANO_CASILLA = 40
 CANTIDAD_CASILLAS = 15
+graficos.max_casillas = CANTIDAD_CASILLAS
 
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption('Monito Móvil')
@@ -62,8 +63,8 @@ velocidad = TAMANO_CASILLA
 
 # Definir matriz del campo de juego (0: casilla normal, 1: pared, 2: obstáculo)
 campo_de_juego = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
@@ -75,11 +76,12 @@ campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 ]
 
-#print(campo_de_juego[][1-2])
+# ---------
+graficos.campo_con_logica = campo_de_juego
 
 #fix tonto para que donde salga el mono sea una casilla valida
 campo_de_juego[posicion_y][posicion_x]=0
@@ -236,7 +238,7 @@ while True:
 
             # Piso normal
             if campo_de_juego[fila][columna] == 0:
-                piso = graficos.tipo_piso(campo_de_juego[fila][columna])
+                piso = graficos.tipo_piso(campo_de_juego[fila][columna], fila, columna)
                 pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
                 # Piso + objetivo
@@ -246,20 +248,20 @@ while True:
 
             # Piso normal + objetos
             elif campo_de_juego[fila][columna] == 1:
-                piso = graficos.tipo_piso(campo_de_juego[fila][columna])
+                piso = graficos.tipo_piso(campo_de_juego[fila][columna], fila, columna)
                 pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
                 objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
 
             # Piso normal + obsatculo
             elif campo_de_juego[fila][columna] == 2:
-                piso = graficos.tipo_piso(0) 
+                piso = graficos.tipo_piso(0, fila, columna)
                 pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
                 pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
             # Piso de agua
             elif campo_de_juego[fila][columna] == 3:
-                piso = graficos.tipo_piso(2) 
+                piso = graficos.tipo_piso(2, fila, columna) 
                 pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
             
