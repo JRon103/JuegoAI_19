@@ -3,6 +3,9 @@ import sys
 import os
 import graficos
 import random
+import heapq
+import matplotlib.pyplot as plt
+import numpy as np
 
 '''
     Tipos de piso en el mapa:
@@ -12,6 +15,64 @@ import random
     2: Enemigo
     3: Piso Agua
 '''
+
+
+class Nodo:
+    def __init__(self, estado, padre=None, g=0, h=0):
+        self.estado = estado
+        self.padre = padre
+        self.g = g  # Costo acumulado desde el inicio hasta este nodo
+        self.h = h  # Heurística (estimación del costo restante hasta el objetivo)
+    
+    def f(self):
+        return self.g + self.h
+
+    def __lt__(self, other):
+        return self.f() < other.f()
+
+def distancia_manhattan(origen, destino):
+    return abs(destino[0] - origen[0]) + abs(destino[1] - origen[1])
+
+def a_estrella(mapa, inicio, objetivos):
+    frontera = []
+    heapq.heappush(frontera, (0, Nodo(inicio)))  # Prioridad, Nodo
+    visitados = set()
+
+    while frontera:
+        _, nodo_actual = heapq.heappop(frontera)
+
+        if nodo_actual.estado in objetivos:
+            objetivos.remove(nodo_actual.estado)
+            if not objetivos:
+                camino = []
+                while nodo_actual:
+                    camino.append(nodo_actual.estado)
+                    nodo_actual = nodo_actual.padre
+                return camino[::-1]
+
+        visitados.add(nodo_actual.estado)
+
+        for movimiento in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nuevo_estado = (nodo_actual.estado[0] + movimiento[0], nodo_actual.estado[1] + movimiento[1])
+            if nuevo_estado in visitados or nuevo_estado[0] < 0 or nuevo_estado[1] < 0 or nuevo_estado[0] >= len(mapa) or nuevo_estado[1] >= len(mapa[0]) or mapa[nuevo_estado[0]][nuevo_estado[1]] == 1:
+                continue
+
+            nuevo_nodo = Nodo(nuevo_estado, nodo_actual, nodo_actual.g + 1, distancia_manhattan(nuevo_estado, objetivos[0]))
+            heapq.heappush(frontera, (nuevo_nodo.f(), nuevo_nodo))
+
+    return None
+
+
+def visualizar_camino(mapa, caminos, objetivos):
+    mapa_visual = np.array([[0 if cell == 0 else 0.5 for cell in row] for row in mapa])
+    for objetivo in objetivos:
+        mapa_visual[objetivo[0], objetivo[1]] = 0.8
+    
+    for i, camino in enumerate(caminos):
+        for paso in camino:
+            mapa_visual[paso[0], paso[1]] = i + 2
+    
+
 
 # Inicializar Pygame
 pygame.init()
@@ -47,6 +108,7 @@ monito_rect = monito_arriba_img.get_rect()
 
 # Posición inicial del monito en la cuadrícula
 posicion_x, posicion_y =  random.randrange(0,15), random.randrange(0,15)
+inicio = (posicion_x, posicion_y)
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
 
@@ -82,18 +144,37 @@ campo_de_juego = [
 
 # ---------
 graficos.campo_con_logica = campo_de_juego
+mapa = campo_de_juego
 
 #fix tonto para que donde salga el mono sea una casilla valida
 campo_de_juego[posicion_y][posicion_x]=0
 
 # Lista de objetivos (puntos verdes) con coordenadas (x, y)
 objetivos = [(3, 2), (10, 4), (5, 8), (6,4)]
+#objetivos = [(3, 2), (10, 4), (5, 8), (6,4)]
 
 # Contador de objetivos capturados
 #FIX TONTO, porque se esta sumando de dos en dos
 #objetivos_capturados = 0
 objetivos_capturados = len(objetivos)*-1
 
+
+caminos = []
+for objetivo in objetivos:
+    camino = a_estrella(mapa, inicio, [objetivo])
+    if camino:
+        caminos.append(camino)
+        inicio = objetivo
+
+if caminos:
+    print("Caminos encontrados:")
+    for i, camino in enumerate(caminos):
+        print(f"Camino {i+1}:")
+        for paso in camino:
+            print(paso)
+    visualizar_camino(mapa, caminos, objetivos)
+else:
+    print("No se encontró un camino válido.")
 
 
 
@@ -201,7 +282,22 @@ while True:
 
     # Verificar si se han capturado todos los objetivos
     if objetivos_capturados >= len(objetivos):
-        print("Felicidades! Has capturado todos los objetivos. Ganaste!")
+
+
+        print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
+
+        # Crear una nueva ventana para la pantalla de victoria
+        pantalla_victoria = pygame.display.set_mode((480, 270))
+
+        # Cargar la imagen de la pantalla de victoria
+        pantalla_victoria_img = pygame.image.load('winScreen.png')
+
+        # Dibujar la imagen de la pantalla de victoria en la nueva ventana
+        pantalla_victoria.blit(pantalla_victoria_img, (0, 0))
+
+        # Actualizar la nueva ventana
+        pygame.display.flip()
+
         pygame.quit()
         sys.exit()
 
