@@ -4,8 +4,8 @@ import os
 import graficos
 import random
 import heapq
-import matplotlib.pyplot as plt
-import numpy as np
+#import matplotlib.pyplot as plt
+#import numpy as np
 
 '''
     Tipos de piso en el mapa:
@@ -14,6 +14,7 @@ import numpy as np
     1: Obstaculo (Pared, Columnas)
     2: Enemigo
     3: Piso Agua
+    
 '''
 
 
@@ -62,7 +63,7 @@ def a_estrella(mapa, inicio, objetivos):
 
     return None
 
-
+'''
 def visualizar_camino(mapa, caminos, objetivos):
     mapa_visual = np.array([[0 if cell == 0 else 0.5 for cell in row] for row in mapa])
     for objetivo in objetivos:
@@ -71,7 +72,7 @@ def visualizar_camino(mapa, caminos, objetivos):
     for i, camino in enumerate(caminos):
         for paso in camino:
             mapa_visual[paso[0], paso[1]] = i + 2
-    
+'''
 
 
 # Inicializar Pygame
@@ -111,6 +112,9 @@ posicion_x, posicion_y =  random.randrange(0,15), random.randrange(0,15)
 inicio = (posicion_x, posicion_y)
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
+
+movimientos = [(posicion_x, posicion_y)]
+direcciones = []
 
 # Vidas
 vidas = 3
@@ -172,14 +176,28 @@ if caminos:
         print(f"Camino {i+1}:")
         for paso in camino:
             print(paso)
-    visualizar_camino(mapa, caminos, objetivos)
+
+            if paso:
+                if movimientos[len(movimientos) - 1][0] < paso[0]:
+                    direcciones.append(4) # derecha
+                elif movimientos[len(movimientos) - 1][0] > paso[0]:
+                    direcciones.append(2) # izquierda
+                elif movimientos[len(movimientos) - 1][1] < paso[1]:
+                    direcciones.append(3) # abajo
+                elif movimientos[len(movimientos) - 1][1] > paso[1]:
+                    direcciones.append(1) # arriba
+                
+                movimientos.append(paso)
+
+            
+    #visualizar_camino(mapa, caminos, objetivos)
 else:
     print("No se encontró un camino válido.")
 
-
+print(direcciones)
 
 # Bucle principal
-while True:
+for dir in direcciones:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             pygame.quit()
@@ -187,22 +205,22 @@ while True:
 
 
     # Obtener teclas presionadas
-    teclas = pygame.key.get_pressed()
+    #teclas = pygame.key.get_pressed()
 
     # Guardar la posición anterior del monito
     posicion_anterior_x, posicion_anterior_y = posicion_x, posicion_y
 
     # Mover el monito según las teclas presionadas y dentro de la cuadrícula
-    if teclas[pygame.K_LEFT] and posicion_x > 0 and campo_de_juego[posicion_y][posicion_x - 1] != 1:
+    if dir == 2 and posicion_x > 0 and campo_de_juego[posicion_y][posicion_x - 1] != 1:
         posicion_x -= 1
         direccion = "izquierda"
-    if teclas[pygame.K_RIGHT] and posicion_x < CANTIDAD_CASILLAS - 1 and campo_de_juego[posicion_y][posicion_x + 1] != 1:
+    if dir == 4 and posicion_x < CANTIDAD_CASILLAS - 1 and campo_de_juego[posicion_y][posicion_x + 1] != 1:
         posicion_x += 1
         direccion = "derecha"
-    if teclas[pygame.K_UP] and posicion_y > 0 and campo_de_juego[posicion_y - 1][posicion_x] != 1:
+    if dir == 1 and posicion_y > 0 and campo_de_juego[posicion_y - 1][posicion_x] != 1:
         posicion_y -= 1
         direccion = "arriba"
-    if teclas[pygame.K_DOWN] and posicion_y < CANTIDAD_CASILLAS - 1 and campo_de_juego[posicion_y + 1][posicion_x] != 1:
+    if dir == 3 and posicion_y < CANTIDAD_CASILLAS - 1 and campo_de_juego[posicion_y + 1][posicion_x] != 1:
         posicion_y += 1
         direccion = "abajo"
 
