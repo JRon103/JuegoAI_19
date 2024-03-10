@@ -4,8 +4,8 @@ import os
 import graficos
 import random
 import heapq
-# import matplotlib.pyplot as plt
 import numpy as np
+
 
 '''
     Tipos de piso en el mapa:
@@ -61,7 +61,7 @@ def a_estrella(mapa, inicio, objetivos):
 
         for movimiento in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             nuevo_estado = (nodo_actual.estado[0] + movimiento[0], nodo_actual.estado[1] + movimiento[1])
-            if nuevo_estado in visitados or nuevo_estado[0] < 0 or nuevo_estado[1] < 0 or nuevo_estado[0] >= len(mapa) or nuevo_estado[1] >= len(mapa[0]) or mapa[nuevo_estado[1]][nuevo_estado[0]] == 1:
+            if nuevo_estado in visitados or nuevo_estado[0] < 0 or nuevo_estado[1] < 0 or nuevo_estado[0] >= len(mapa) or nuevo_estado[1] >= len(mapa[0]) or mapa[nuevo_estado[1]][nuevo_estado[0]] == 1 or mapa[nuevo_estado[1]][nuevo_estado[0]] == 2:
                 continue
 
             nuevo_nodo = Nodo(nuevo_estado, nodo_actual, nodo_actual.g + 1, distancia_manhattan(nuevo_estado, objetivos[0]))
@@ -69,23 +69,40 @@ def a_estrella(mapa, inicio, objetivos):
 
     return None
 
-'''
-def visualizar_camino(mapa, caminos, objetivos):
-    mapa_visual = np.array([[0 if cell == 0 else 0.5 for cell in row] for row in mapa])
-    for objetivo in objetivos:
-        mapa_visual[objetivo[0], objetivo[1]] = 0.8
+
+class Perseguidor:
+    def __init__(self, inicio, evasor):
+        self.inicio = inicio
+        self.posicion_x, self.posicion_y = inicio
+        self.evasor = evasor
+        self.camino = None
     
-    for i, camino in enumerate(caminos):
-        for paso in camino:
-            mapa_visual[paso[1], paso[0]] = i
+    def actualizar_camino(self, mapa):
+        if not self.evasor or not self.evasor.posicion:
+            return
+        
+        self.camino = a_estrella(mapa, (self.posicion_x, self.posicion_y), [self.evasor.posicion])
     
-    plt.imshow(mapa_visual, cmap='tab10', interpolation='nearest')
-    plt.title('Caminos encontrados')
-    plt.xticks(range(len(mapa[0])))
-    plt.yticks(range(len(mapa)))
-    #plt.gca().invert_yaxis()
-    plt.show()
-'''
+    def mover(self):
+        if self.camino:
+            if self.posicion_x < self.camino[-1][0]:
+                self.posicion_x += 1
+            elif self.posicion_x > self.camino[-1][0]:
+                self.posicion_x -= 1
+            if self.posicion_y < self.camino[-1][1]:
+                self.posicion_y += 1
+            elif self.posicion_y > self.camino[-1][1]:
+                self.posicion_y -= 1
+            self.camino.pop()
+
+class Evasor:
+    def __init__(self, inicio):
+        self.posicion = inicio
+
+# Crear un evasor y perseguidor
+evasor = Evasor((random.randrange(0, 15), random.randrange(0, 15)))
+perseguidor = Perseguidor((random.randrange(0, 15), random.randrange(0, 15)), evasor)
+
 
 
 # Inicializar Pygame
@@ -142,6 +159,7 @@ monito_img = monito_arriba_img
 velocidad = TAMANO_CASILLA
 
 
+
 # Definir matriz del campo de juego (0: casilla normal, 1: pared, 2: obstáculo)
 campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -149,17 +167,18 @@ campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 3, 3, 3, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 3, 0, 0, 1, 0],
+    [0, 0, 0, 2, 0, 0, 0, 3, 0, 3, 3, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 3, 3, 3, 0, 1, 0, 0, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 ]
+
 
 # ---------
 graficos.campo_con_logica = campo_de_juego
@@ -175,24 +194,10 @@ for i in range(3):
 
 objetivosOrg = objetivos
 
-enemigos = []
-while True:
-    if len(enemigos) < 3:
-        obj_ix = random.randrange(0,15)
-        obj_iy = random.randrange(0,15)
-
-        if objetivos.count((obj_ix, obj_iy)) == 0:
-            enemigos.append((obj_ix, obj_iy))
-            campo_de_juego[obj_iy][obj_ix] = 2
-        
-    else:
-        break
-
 #fix tonto para que donde salga el mono sea una casilla valida
 campo_de_juego[posicion_y][posicion_x]=0
 
 mapa = campo_de_juego
-
 
 
 # Contador de objetivos capturados
@@ -257,6 +262,13 @@ for dir in direcciones:
         
         #dir = direcciones[i]
         #i+=1
+                
+
+        # Actualizar el camino del perseguidor
+        perseguidor.actualizar_camino(campo_de_juego)
+        
+        # Mover el perseguidor
+        perseguidor.mover()
                 
         # Obtener teclas presionadas
         #teclas = pygame.key.get_pressed()
@@ -472,5 +484,3 @@ for dir in direcciones:
         print("La bateía se ha acabado")
         pygame.quit()
         sys.exit()
-
-        
