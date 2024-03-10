@@ -4,8 +4,8 @@ import os
 import graficos
 import random
 import heapq
-#import matplotlib.pyplot as plt
-#import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 
 '''
     Tipos de piso en el mapa:
@@ -55,7 +55,7 @@ def a_estrella(mapa, inicio, objetivos):
 
         for movimiento in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             nuevo_estado = (nodo_actual.estado[0] + movimiento[0], nodo_actual.estado[1] + movimiento[1])
-            if nuevo_estado in visitados or nuevo_estado[0] < 0 or nuevo_estado[1] < 0 or nuevo_estado[0] >= len(mapa) or nuevo_estado[1] >= len(mapa[0]) or mapa[nuevo_estado[0]][nuevo_estado[1]] == 1:
+            if nuevo_estado in visitados or nuevo_estado[0] < 0 or nuevo_estado[1] < 0 or nuevo_estado[0] >= len(mapa) or nuevo_estado[1] >= len(mapa[0]) or mapa[nuevo_estado[1]][nuevo_estado[0]] == 1:
                 continue
 
             nuevo_nodo = Nodo(nuevo_estado, nodo_actual, nodo_actual.g + 1, distancia_manhattan(nuevo_estado, objetivos[0]))
@@ -63,7 +63,7 @@ def a_estrella(mapa, inicio, objetivos):
 
     return None
 
-'''
+
 def visualizar_camino(mapa, caminos, objetivos):
     mapa_visual = np.array([[0 if cell == 0 else 0.5 for cell in row] for row in mapa])
     for objetivo in objetivos:
@@ -71,8 +71,15 @@ def visualizar_camino(mapa, caminos, objetivos):
     
     for i, camino in enumerate(caminos):
         for paso in camino:
-            mapa_visual[paso[0], paso[1]] = i + 2
-'''
+            mapa_visual[paso[1], paso[0]] = i
+    
+    plt.imshow(mapa_visual, cmap='tab10', interpolation='nearest')
+    plt.title('Caminos encontrados')
+    plt.xticks(range(len(mapa[0])))
+    plt.yticks(range(len(mapa)))
+    #plt.gca().invert_yaxis()
+    plt.show()
+
 
 
 # Inicializar Pygame
@@ -109,6 +116,8 @@ monito_rect = monito_arriba_img.get_rect()
 
 # Posición inicial del monito en la cuadrícula
 posicion_x, posicion_y =  random.randrange(0,15), random.randrange(0,15)
+posicion_x = 3
+posicion_y = 0
 inicio = (posicion_x, posicion_y)
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
@@ -148,7 +157,23 @@ campo_de_juego = [
 
 # ---------
 graficos.campo_con_logica = campo_de_juego
-mapa = campo_de_juego
+mapa = [
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 3, 3, 3, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+]
 
 #fix tonto para que donde salga el mono sea una casilla valida
 campo_de_juego[posicion_y][posicion_x]=0
@@ -190,12 +215,13 @@ if caminos:
                 movimientos.append(paso)
 
             
-    #visualizar_camino(mapa, caminos, objetivos)
+    visualizar_camino(mapa, caminos, objetivos)
 else:
     print("No se encontró un camino válido.")
 
 print(direcciones)
 
+i = 0
 # Bucle principal
 for dir in direcciones:
     for evento in pygame.event.get():
@@ -203,7 +229,9 @@ for dir in direcciones:
             pygame.quit()
             sys.exit()
 
-
+    #dir = direcciones[i]
+    #i+=1
+            
     # Obtener teclas presionadas
     #teclas = pygame.key.get_pressed()
 
@@ -312,6 +340,8 @@ for dir in direcciones:
 
         # Dibujar la imagen de la pantalla de victoria en la nueva ventana
         pantalla_victoria.blit(pantalla_victoria_img, (0, 0))
+
+        visualizar_camino(mapa, caminos, objetivos)
 
         # Actualizar la nueva ventana
         pygame.display.flip()
