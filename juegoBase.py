@@ -1,3 +1,4 @@
+import time
 import pygame
 import sys
 import os
@@ -366,6 +367,7 @@ for dir in direcciones:
             # Crear una nueva ventana para la pantalla de victoria
             pantalla_victoria = pygame.display.set_mode((480, 270))
 
+
             # Cargar la imagen de la pantalla de victoria
             pantalla_victoria_img = pygame.image.load('winScreen.png')
 
@@ -376,7 +378,7 @@ for dir in direcciones:
 
             # Actualizar la nueva ventana
             pygame.display.flip()
-
+            time.sleep(5)
             pygame.quit()
             sys.exit()
 
