@@ -4,7 +4,7 @@ import os
 import graficos
 import random
 import heapq
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 
 '''
@@ -69,7 +69,6 @@ def a_estrella(mapa, inicio, objetivos):
 
     return None
 
-'''
 def visualizar_camino(mapa, caminos, objetivos):
     mapa_visual = np.array([[0 if cell == 0 else 0.5 for cell in row] for row in mapa])
     for objetivo in objetivos:
@@ -77,7 +76,7 @@ def visualizar_camino(mapa, caminos, objetivos):
     
     for i, camino in enumerate(caminos):
         for paso in camino:
-            mapa_visual[paso[1], paso[0]] = i
+            mapa_visual[paso[1], paso[0]] = i + 2
     
     plt.imshow(mapa_visual, cmap='tab10', interpolation='nearest')
     plt.title('Caminos encontrados')
@@ -85,7 +84,7 @@ def visualizar_camino(mapa, caminos, objetivos):
     plt.yticks(range(len(mapa)))
     #plt.gca().invert_yaxis()
     plt.show()
-'''
+
 
 
 # Inicializar Pygame
@@ -145,20 +144,20 @@ velocidad = TAMANO_CASILLA
 # Definir matriz del campo de juego (0: casilla normal, 1: pared, 2: obstáculo)
 campo_de_juego = [
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 3, 3, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 3, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 3, 3, 3, 0, 1, 0, 0, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 0, 1, 0],
+    [0, 1, 1, 1, 0, 0, 0, 3, 3, 3, 3, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0, 0, 0, 0, 0, 3, 3, 0, 0, 1, 0],
+    [0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+    [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 # ---------
@@ -166,16 +165,22 @@ graficos.campo_con_logica = campo_de_juego
 
 # Lista de objetivos (puntos verdes) con coordenadas (x, y)
 objetivos = []
+pisoAguaObjetivos = []
 
-for i in range(3):
+for i in range(5):
     obj_ix = random.randrange(0,15)
     obj_iy = random.randrange(0,15)
     objetivos.append((obj_ix, obj_iy))
+
+    if campo_de_juego[obj_iy][obj_ix] == 3:
+        pisoAguaObjetivos.append((obj_iy, obj_ix))
+    
     campo_de_juego[obj_iy][obj_ix] = 0
 
 objetivosOrg = objetivos
 
 enemigos = []
+pisoAguaEnemigos = []
 while True:
     if len(enemigos) < 3:
         obj_ix = random.randrange(0,15)
@@ -183,6 +188,10 @@ while True:
 
         if objetivos.count((obj_ix, obj_iy)) == 0:
             enemigos.append((obj_ix, obj_iy))
+
+            if campo_de_juego[obj_iy][obj_ix] == 3:
+                pisoAguaEnemigos.append((obj_iy, obj_ix))
+            
             campo_de_juego[obj_iy][obj_ix] = 2
         
     else:
@@ -332,7 +341,11 @@ for dir in direcciones:
             print(f"Oh no! Tocaste a un enemigo. Vidas restantes: {vidas}")
 
             # Eliminar enemigo de la matriz
-            campo_de_juego[posicion_y][posicion_x] = 0  # 0 representa una casilla normal
+            if pisoAguaEnemigos.count((posicion_y, posicion_x)) > 0:
+                campo_de_juego[posicion_y][posicion_x] = 3
+            else:
+                campo_de_juego[posicion_y][posicion_x] = 0  # 0 representa una casilla normal
+            
 
             # Verificar si el jugador se quedó sin vidas
             if vidas <= 0:
@@ -372,7 +385,7 @@ for dir in direcciones:
             # Dibujar la imagen de la pantalla de victoria en la nueva ventana
             pantalla_victoria.blit(pantalla_victoria_img, (0, 0))
 
-            # visualizar_camino(mapa, caminos, objetivos)
+            visualizar_camino(mapa, caminos, objetivos)
 
             # Actualizar la nueva ventana
             pygame.display.flip()
@@ -419,6 +432,10 @@ for dir in direcciones:
                 # Piso normal
                 if campo_de_juego[fila][columna] == 0:
                     piso = graficos.tipo_piso(campo_de_juego[fila][columna], fila, columna)
+
+                    if pisoAguaObjetivos.count((fila, columna)) > 0:
+                        piso = graficos.tipo_piso(2, fila, columna)
+
                     pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
                     # Piso + objetivo
@@ -431,15 +448,20 @@ for dir in direcciones:
                         pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))                
 
 
-                # Piso normal + objetos
+                # Obstaculos
                 elif campo_de_juego[fila][columna] == 1:
                     piso = graficos.tipo_piso(campo_de_juego[fila][columna], fila, columna)
                     pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
                     objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
 
-                # Piso normal + obsatculo
+                # Enemigos
                 elif campo_de_juego[fila][columna] == 2:
+
                     piso = graficos.tipo_piso(0, fila, columna)
+
+                    if pisoAguaEnemigos.count((fila, columna)) > 0:
+                        piso = graficos.tipo_piso(2, fila, columna)
+                    
                     pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
                     pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
@@ -449,7 +471,6 @@ for dir in direcciones:
                     piso = graficos.tipo_piso(2, fila, columna) 
                     pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
-                
                     #pantalla.blit(objetivo_img, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
         graficos.enemigo1 += 1
@@ -460,7 +481,7 @@ for dir in direcciones:
         pygame.display.flip()
 
         # Controlar la velocidad de la ejecución
-        pygame.time.Clock().tick(3)
+        pygame.time.Clock().tick(5)
 
 
 
@@ -469,7 +490,7 @@ for dir in direcciones:
                     #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))#el cuadro rojo feo de antes
                     #pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
     else:
-        print("La bateía se ha acabado")
+        print("La batería se ha acabado")
         pygame.quit()
         sys.exit()
 
