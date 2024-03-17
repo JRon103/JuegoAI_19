@@ -339,12 +339,12 @@ while True:
         sys.exit()
     elif bateria < 20.0:
         print("Batería baja. Buscando punto de recarga...")
-        nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), area_recarga)
+        #nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), )
         direcciones = []
-        buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
+        buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), area_recarga[0]], direcciones)
         recargar = True
 
-        casillaInicial = area_recarga.index(nextObj)
+        casillaInicial = 0
         i = bateria
         while i < 70.0:
             direcciones.append((casillaInicial % 4) + 1)
