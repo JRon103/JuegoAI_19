@@ -317,7 +317,7 @@ def agregarDirecciones(camino, direcciones):
             
 nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
 buscarCamino(inicio, [inicio, nextObj], direcciones)            
-
+estado = "Recolectando Objetivos"
 # --------------------------------------------------------- #
 
 # Batería ------------------------------------------------- #
@@ -343,6 +343,7 @@ while True:
         direcciones = []
         buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), area_recarga[0]], direcciones)
         recargar = True
+        estado = "Buscando centro de carga"
 
         casillaInicial = 0
         i = bateria
@@ -372,9 +373,11 @@ while True:
             if campo_de_juego[posicion_y][posicion_x] == 4 and recargar:
                 if bateria >= 70.0:
                     recargar = False
+                    estado = "Recolectando Objetivos"
                     break
                 else:
                     bateria += 3
+                    estado = "Recargando batería"
             
             '''
             if bateria < 20.0:
@@ -534,10 +537,13 @@ while True:
             texto_objetivos = fuente_objetivos.render(f'Objetivos: {len(objetivos)}', True, (0, 0, 0))
             pantalla.blit(texto_objetivos, (80, 710))
 
-            # Dibujar el texto de las vidas en la pantalla
+            # Dibujar el texto de la batería
             texto_bateria = fuente.render(f"Batería: {bateria:.1f}", True, (0, 0, 0))  # color negro en RGB
             pantalla.blit(texto_bateria, (300, 710))  # Ajusta las coordenadas 
 
+            # Dibujar el texto del estado 
+            texto_esatdo = fuente.render(f"Estado: {estado}", True, (0, 0, 0))  # color negro en RGB
+            pantalla.blit(texto_esatdo, (500, 710))  # Ajusta las coordenadas 
 
             # Imagen del ENEMIGO
             imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + graficos.enemigo1 % 10}.png'))
@@ -621,6 +627,7 @@ while True:
     nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
     direcciones = []
     buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
+    estado = "Recolectando objetivos"
 
     if len(direcciones) == 0:
         break
