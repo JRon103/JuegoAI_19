@@ -100,7 +100,21 @@ def visualizar_camino(mapa, caminos, objetivos):
     #plt.gca().invert_yaxis()
     plt.show()
 
+def terminarPorDerrota ():
+    # Crear una nueva ventana para la pantalla de derrota
+    pantalla_derrota = pygame.display.set_mode((480, 270))
 
+    # Cargar la imagen de la pantalla de derrota
+    pantalla_derrota_img = pygame.image.load('loseScreen.png')
+    # Dibujar la imagen de la pantalla de derrota en la nueva ventana
+    pantalla_derrota.blit(pantalla_derrota_img, (0, 0))
+
+    # Actualizar la nueva ventana
+    pygame.display.flip()
+    time.sleep(5)
+
+    pygame.quit()
+    sys.exit()
 
 # Inicializar Pygame
 pygame.init()
@@ -123,7 +137,7 @@ CANTIDAD_CASILLAS = 15
 graficos.max_casillas = CANTIDAD_CASILLAS
 
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
-pygame.display.set_caption('Monito Móvil')
+pygame.display.set_caption('Agente Inteligente')
 
 
 # Cargar imagen del objetivo
@@ -194,7 +208,7 @@ for area_bat in area_recarga:
 objetivos = []
 pisoAguaObjetivos = []
 
-while len(objetivos) < 35:
+while len(objetivos) < 45:
     obj_ix = random.randrange(0,15)
     obj_iy = random.randrange(0,15)
 
@@ -328,6 +342,7 @@ estado = "Recolectando Objetivos"
 
 bateria = 100.0
 recargar = False
+derrota = False
 i = 0
 # Bucle principal
 while True:
@@ -335,6 +350,8 @@ while True:
     # Verificar la batería antes de continuar
     if bateria <= 0.0:
         print("La batería se ha acabado")
+        terminarPorDerrota()
+
         pygame.quit()
         sys.exit()
     elif bateria < 20.0:
@@ -347,7 +364,7 @@ while True:
 
         casillaInicial = 0
         i = bateria
-        while i < 70.0:
+        while i <= 70.0:
             direcciones.append((casillaInicial % 4) + 1)
             casillaInicial += 1
             i+= 3
@@ -464,8 +481,9 @@ while True:
                 # Verificar si el jugador se quedó sin vidas
                 if vidas <= 0:
                     print("¡Game Over! Te quedaste sin vidas.")
-                    pygame.quit()
-                    sys.exit()
+
+                    derrota = True
+                    
 
                     # Verificar colisión con objetivos
             objetivos_capturados_temp = []  # Lista temporal para almacenar objetivos capturados en este ciclo
@@ -538,7 +556,7 @@ while True:
             pantalla.blit(texto_objetivos, (80, 710))
 
             # Dibujar el texto de la batería
-            texto_bateria = fuente.render(f"Batería: {bateria:.1f}", True, (0, 0, 0))  # color negro en RGB
+            texto_bateria = fuente.render(f"Batería: {0.0 if bateria <= 0.0 else bateria:.1f}", True, (0, 0, 0))  # color negro en RGB
             pantalla.blit(texto_bateria, (300, 710))  # Ajusta las coordenadas 
 
             # Dibujar el texto del estado 
@@ -546,7 +564,8 @@ while True:
             pantalla.blit(texto_esatdo, (500, 710))  # Ajusta las coordenadas 
 
             # Imagen del ENEMIGO
-            imagen_obstaculo = pygame.image.load(os.path.join('enemigo2', f'windows{1 + graficos.enemigo1 % 10}.png'))
+            imagen_obstaculo = pygame.image.load(os.path.join('enemigo1', f'android{1 + graficos.enemigo1 % 10}.png'))
+            #imagen_obstaculo = pygame.transform.scale(imagen_obstaculo, (TAMANO_CASILLA * 0.9, TAMANO_CASILLA * 0.9))
             objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
             
 
@@ -613,6 +632,10 @@ while True:
             # Controlar la velocidad de la ejecución
             pygame.time.Clock().tick(5)
 
+            if derrota:
+                time.sleep(2)
+                terminarPorDerrota()
+
 
 
                         #pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
@@ -621,15 +644,17 @@ while True:
                         #pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
         else:
             print("La batería se ha acabado")
-            pygame.quit()
-            sys.exit()
-    
-    nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
-    direcciones = []
-    buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
-    estado = "Recolectando objetivos"
 
-    if len(direcciones) == 0:
+            time.sleep(5)
+            terminarPorDerrota()            
+    
+    if len(objetivos) > 0:
+        nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
+        direcciones = []
+        buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
+        estado = "Recolectando objetivos"
+
+    if len(direcciones) == 0:                
         break
 
             
