@@ -79,6 +79,8 @@ def tipo_piso (campo, fila, columna):
             imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'pisos_pared', nombre_imagen_obs + '.png'))
         case 2:
             imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'water', 'piso2water.png'))
+        case 4:
+            imagen_piso = pygame.image.load(os.path.join(ruta_carpeta, 'pisos_pared', 'piso4.png'))
     
     return imagen_piso
 
