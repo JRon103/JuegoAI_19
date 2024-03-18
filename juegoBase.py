@@ -9,15 +9,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 '''
-    Tipos de piso en el mapa:
+    INTELIGENCIA ARTIFICIAL (ENE-JUN 2024 11:00 HRS)
 
-    0: Normal
-    1: Obstaculo (Pared, Columnas)
-    2: Enemigo
-    3: Piso Agua
-    4: Área de recarga de batería
+    Desarrolladores:
+        - 19130971 FRANCISCO AXEL ROMÁN CARDOZA
+        - 20130764 JULIÁN RODOLFO VILLA CRUZ
+        - 20130785 IVANOVICX NUÑEZ PEREZ
+        - 20130804 ADRIANA SOFÍA SOLIS CASTRO
+
+    
+    NOTAS IMPORTANTES PARA EL DESARROLLO / MEJOR ENTENDIMIENTO
+
+    Tipos de piso en el mapa:
+        0: Normal
+        1: Obstaculo (Pared, Mesas)
+        2: Enemigo
+        3: Piso de Agua
+        4: Área de recarga de batería
+
+    Objetivos:
+        - Los objetivos están sobre algun tipo de piso (0 ó 3)
+        - No ocupan un tipo de casilla como los Enemigos
+    
+    Batería:
+        - Inicialmente la carga es de 100.0
+        - Por cada casilla tipo 0 se descuenta 1.0 y por casilla tipo 3 disminuye 1.3
+        - Cuando la batería es menor o igual a 20% buscará la ruta para el centro de carga
+        - La batería dejará de cargarse después del 70%
     
 '''
+
+# Clases y Métodos ------------------------------------------------------------------------------ #
 
 class Nodo:
     def __init__(self, estado, padre=None, g=0, h=0):
@@ -40,20 +62,13 @@ def encontrar_posicion_mas_cercana(posicion_actual, posiciones):
     posicion_mas_cercana = None
     
     for posicion in posiciones:
-        distancia = distancia_manhattan(posicion_actual, posicion)  # Puedes usar distancia_euclidiana si prefieres
+        distancia = distancia_manhattan(posicion_actual, posicion)
         
         if distancia < distancia_minima:
             distancia_minima = distancia
             posicion_mas_cercana = posicion
     
     return posicion_mas_cercana
-
-'''
-    Notas: 
-        - Actualmente está evitando los pisos de agua, si esto cambia se debe tomar en cuenta el valor de vida que
-        reduce este tipo de piso
-        - Lo mismo sucede con los enemigos
-'''
 
 def a_estrella(mapa, inicio, objetivos):
     frontera = []
@@ -97,16 +112,41 @@ def visualizar_camino(mapa, caminos, objetivos):
     plt.title('Caminos encontrados')
     plt.xticks(range(len(mapa[0])))
     plt.yticks(range(len(mapa)))
-    #plt.gca().invert_yaxis()
     plt.show()
 
-def terminarPorDerrota ():
-    # Crear una nueva ventana para la pantalla de derrota
+def buscarCamino (inicio, obj, direcciones):
+    camino = a_estrella(campo_de_juego, inicio, obj)
+    if camino:
+        agregarDirecciones(camino, direcciones)
+
+def agregarDirecciones(camino, direcciones):
+    for i in range(len(camino) - 1):
+        paso_actual = camino[i]
+        paso_siguiente = camino[i + 1]
+
+        if paso_siguiente[0] > paso_actual[0]:
+            direcciones.append(4)  # derecha
+        elif paso_siguiente[0] < paso_actual[0]:
+            direcciones.append(2)  # izquierda
+        elif paso_siguiente[1] > paso_actual[1]:
+            direcciones.append(3)  # abajo
+        elif paso_siguiente[1] < paso_actual[1]:
+            direcciones.append(1)  # arriba
+
+        movimientos.append(paso_actual)
+
+def terminarJuego (derrota):
+
+    # Crear una nueva ventana
     pantalla_derrota = pygame.display.set_mode((480, 270))
 
-    # Cargar la imagen de la pantalla de derrota
-    pantalla_derrota_img = pygame.image.load('loseScreen.png')
-    # Dibujar la imagen de la pantalla de derrota en la nueva ventana
+    # Cargar la imagen de la pantalla de derrota o victoria
+    if derrota:
+        pantalla_derrota_img = pygame.image.load('loseScreen.png')
+    else:
+        pantalla_derrota_img = pygame.image.load('winScreen.png')
+
+    # Dibujar la imagen
     pantalla_derrota.blit(pantalla_derrota_img, (0, 0))
 
     # Actualizar la nueva ventana
@@ -116,9 +156,11 @@ def terminarPorDerrota ():
     pygame.quit()
     sys.exit()
 
+# ----------------------------------------------------------------------------------------------- #
+# Características para el juego ----------------------------------------------------------------- #
+
 # Inicializar Pygame
 pygame.init()
-
 
 fuente = pygame.font.SysFont('Arial', 20)
 fuente_objetivos = pygame.font.SysFont('Arial', 20)
@@ -126,9 +168,6 @@ objetivos_texto = 0
 
 # Definir colores
 BLANCO = (255, 255, 255)
-NEGRO = (0, 0, 0)
-ROJO = (255, 0, 0)
-VERDE = (0, 255, 0)
 
 # Configurar la pantalla
 ANCHO, ALTO = 850, 750
@@ -138,7 +177,6 @@ graficos.max_casillas = CANTIDAD_CASILLAS
 
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption('Agente Inteligente')
-
 
 # Cargar imagen del objetivo
 objetivo_img = pygame.Surface((TAMANO_CASILLA, TAMANO_CASILLA))
@@ -150,8 +188,6 @@ monito_rect = monito_arriba_img.get_rect()
 
 # Posición inicial del monito en la cuadrícula
 posicion_x, posicion_y =  random.randrange(0,15), random.randrange(0,15)
-#posicion_x = 3
-#posicion_y = 0
 inicio = (posicion_x, posicion_y)
 monito_rect.x = posicion_x * TAMANO_CASILLA
 monito_rect.y = posicion_y * TAMANO_CASILLA
@@ -159,16 +195,12 @@ monito_rect.y = posicion_y * TAMANO_CASILLA
 movimientos = [(posicion_x, posicion_y)]
 direcciones = []
 
-# Vidas
-vidas = 3
-
 # Dirección inicial del monito
 direccion = "arriba"
 monito_img = monito_arriba_img
 
 # Configurar velocidad del monito (una casilla por movimiento)
 velocidad = TAMANO_CASILLA
-
 
 # Definir matriz del campo de juego (0: casilla normal, 1: pared, 2: obstáculo)
 campo_de_juego = [
@@ -189,10 +221,9 @@ campo_de_juego = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
-# ---------
 graficos.campo_con_logica = campo_de_juego
 
-# área de recarga
+# Definición del área de recarga
 area_recarga = []
 obj_ix = random.randrange(2,13)
 obj_iy = random.randrange(2,13)
@@ -200,11 +231,11 @@ area_recarga.append((obj_ix, obj_iy))
 area_recarga.append((obj_ix - 1, obj_iy))
 area_recarga.append((obj_ix - 1, obj_iy - 1))
 area_recarga.append((obj_ix, obj_iy - 1))
-# , , , (obj_ix, obj_iy - 1)
+
 for area_bat in area_recarga:
     campo_de_juego[area_bat[1]][area_bat[0]] = 4
 
-# Lista de objetivos (puntos verdes) con coordenadas (x, y)
+# Lista de objetivos con coordenadas (x, y)
 objetivos = []
 pisoAguaObjetivos = []
 
@@ -222,6 +253,7 @@ while len(objetivos) < 45:
 
 objetivosOrg = objetivos
 
+# Definición de la posición de enemigos
 enemigos = []
 pisoAguaEnemigos = []
 while True:
@@ -240,171 +272,70 @@ while True:
     else:
         break
 
-#fix tonto para que donde salga el mono sea una casilla valida
-campo_de_juego[posicion_y][posicion_x]=0
-
-mapa = campo_de_juego
-
-
+# fix tonto para que donde salga el mono sea una casilla valida
+if campo_de_juego[posicion_y][posicion_x] == 1:
+    campo_de_juego[posicion_y][posicion_x] = 0
 
 # Contador de objetivos capturados
-#FIX TONTO, porque se esta sumando de dos en dos
-#objetivos_capturados = 0
 objetivos_capturados = len(objetivos)*-1
 
-# Creación de caminos disponibles ------------------------- #
-
-'''
-caminos = []
-for objetivo in objetivos:
-    camino = a_estrella(mapa, inicio, [objetivo])
-    if camino:
-        caminos.append(camino)
-        inicio = objetivo
-'''
-
-def buscarCamino (inicio, obj, direcciones):
-    camino = a_estrella(campo_de_juego, inicio, obj)
-    if camino:
-        agregarDirecciones(camino, direcciones)
-
-'''
-if caminos:
-    print("Caminos encontrados:")
-    for i, camino in enumerate(caminos):
-        print(f"Camino {i+1}:")
-        for paso in camino:
-            print(paso)
-
-            if paso:
-                if movimientos[len(movimientos) - 1][0] < paso[0]:
-                    direcciones.append(4) # derecha
-                elif movimientos[len(movimientos) - 1][0] > paso[0]:
-                    direcciones.append(2) # izquierda
-                elif movimientos[len(movimientos) - 1][1] < paso[1]:
-                    direcciones.append(3) # abajo
-                elif movimientos[len(movimientos) - 1][1] > paso[1]:
-                    direcciones.append(1) # arriba
-                
-                movimientos.append(paso)
-
-            
-    #visualizar_camino(mapa, caminos, objetivos)
-else:
-    print("No se encontró un camino válido.")
-
-
-def agregarDirecciones (camino):
-    for paso in camino:
-        print(paso)
-
-        if paso:
-            if movimientos[len(movimientos) - 1][0] < paso[0]:
-                direcciones.append(4) # derecha
-            elif movimientos[len(movimientos) - 1][0] > paso[0]:
-                direcciones.append(2) # izquierda
-            elif movimientos[len(movimientos) - 1][1] < paso[1]:
-                direcciones.append(3) # abajo
-            elif movimientos[len(movimientos) - 1][1] > paso[1]:
-                direcciones.append(1) # arriba
-            
-            movimientos.append(paso)
-'''
-def agregarDirecciones(camino, direcciones):
-    for i in range(len(camino) - 1):
-        paso_actual = camino[i]
-        paso_siguiente = camino[i + 1]
-
-        if paso_siguiente[0] > paso_actual[0]:
-            direcciones.append(4)  # derecha
-        elif paso_siguiente[0] < paso_actual[0]:
-            direcciones.append(2)  # izquierda
-        elif paso_siguiente[1] > paso_actual[1]:
-            direcciones.append(3)  # abajo
-        elif paso_siguiente[1] < paso_actual[1]:
-            direcciones.append(1)  # arriba
-
-        movimientos.append(paso_actual)
-
-
-# print(direcciones)
-            
+# ----------------------------------------------------------------------------------------------- #
+# Definición de la 1ra ruta --------------------------------------------------------------------- #
+      
 nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
-buscarCamino(inicio, [inicio, nextObj], direcciones)            
-estado = "Recolectando Objetivos"
-# --------------------------------------------------------- #
+buscarCamino(inicio, [inicio, nextObj], direcciones)     
+if len(direcciones) == 0:
+    print("No se encontró un camino válido")       
 
-# Batería ------------------------------------------------- #
+estado = "Recolectando objetivos"
 
-'''
-    Se manejará con vidas Y baterías / energía ? por mientras así será
-'''
+# ----------------------------------------------------------------------------------------------- #
+# Características en constante cambio ----------------------------------------------------------- #
 
+vidas = 3
 bateria = 100.0
 recargar = False
 derrota = False
+victoria = False
 i = 0
-# Bucle principal
+
+# ----------------------------------------------------------------------------------------------- #
+# Ciclo principal ( Donde se maneja el juego ) -------------------------------------------------- #
+
 while True:
 
-    # Verificar la batería antes de continuar
+    # Verificar la batería
     if bateria <= 0.0:
         print("La batería se ha acabado")
-        terminarPorDerrota()
-
-        pygame.quit()
-        sys.exit()
+        terminarJuego(True)
     elif bateria < 20.0:
         print("Batería baja. Buscando punto de recarga...")
-        #nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), )
         direcciones = []
         buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), area_recarga[0]], direcciones)
         recargar = True
         estado = "Buscando centro de carga"
-
+        
         casillaInicial = 0
         i = bateria
         while i <= 70.0:
             direcciones.append((casillaInicial % 4) + 1)
             casillaInicial += 1
-            i+= 3
+            i += 3.0
 
+    # Empezar el recorrido
     for dir in direcciones:
-
         if bateria > 0.0:
+
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
             
             
-            #dir = direcciones[i]
-            #i+=1
-                    
-            # Obtener teclas presionadas
-            #teclas = pygame.key.get_pressed()
-
-            # Guardar la posición anterior del monito
+            # Guardar la posición anterior del monito ---------------------------------------------
             posicion_anterior_x, posicion_anterior_y = posicion_x, posicion_y
 
-            if campo_de_juego[posicion_y][posicion_x] == 4 and recargar:
-                if bateria >= 70.0:
-                    recargar = False
-                    estado = "Recolectando Objetivos"
-                    break
-                else:
-                    bateria += 3
-                    estado = "Recargando batería"
-            
-            '''
-            if bateria < 20.0:
-                direcciones = []
-                nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), area_recarga)
-                buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
-                #recargar = True
-            '''
-
-            # Mover el monito según las teclas presionadas y dentro de la cuadrícula
+            # Mover el monito según la dirección, dentro del campo de juego -----------------------
             if dir == 2 and posicion_x > 0 and campo_de_juego[posicion_y][posicion_x - 1] != 1:
                 posicion_x -= 1
                 direccion = "izquierda"
@@ -418,16 +349,25 @@ while True:
                 posicion_y += 1
                 direccion = "abajo"
 
-            # Actualizar la posición del monito en el rectángulo
+            # Si estamos en modo de recarga, checará lo siguiente
+            if recargar:
+                if campo_de_juego[posicion_y][posicion_x] == 4:
+                    if bateria >= 70.0:
+                        recargar = False
+                        estado = "Recolectando Objetivos"
+                        break
+                    else:
+                        bateria += 3.0
+                        estado = "Recargando batería"
+            else:
+                estado = "Recolectando objetivos"
+
+
+            # Actualizar la posición del monito en el rectángulo ----------------------------------
             monito_rect.x = posicion_x * TAMANO_CASILLA
             monito_rect.y = posicion_y * TAMANO_CASILLA
 
-            if campo_de_juego[posicion_y][posicion_x] == 0:
-                bateria -= 1.0
-            elif campo_de_juego[posicion_y][posicion_x] == 3:
-                bateria -= 1.3
-
-            # Cambiar la imagen del monito según la dirección
+            # Cambiar la imagen del monito según la dirección -------------------------------------
             if direccion == "arriba":
                 if graficos.lastDirection == "arriba":
                     graficos.numSteps += 1
@@ -464,10 +404,8 @@ while True:
 
                 monito_img = graficos.mover("derecha", graficos.numSteps)
 
-
-            # Verificar colisión con enemigos
+            # Verificar colisión con enemigos -----------------------------------------------------
             if campo_de_juego[posicion_y][posicion_x] == 2:
-                # El jugador ha tocado a un enemigo
                 vidas -= 1
                 print(f"Oh no! Tocaste a un enemigo. Vidas restantes: {vidas}")
 
@@ -475,18 +413,15 @@ while True:
                 if pisoAguaEnemigos.count((posicion_y, posicion_x)) > 0:
                     campo_de_juego[posicion_y][posicion_x] = 3
                 else:
-                    campo_de_juego[posicion_y][posicion_x] = 0  # 0 representa una casilla normal
-                
+                    campo_de_juego[posicion_y][posicion_x] = 0
 
                 # Verificar si el jugador se quedó sin vidas
                 if vidas <= 0:
                     print("¡Game Over! Te quedaste sin vidas.")
-
                     derrota = True
-                    
-
-                    # Verificar colisión con objetivos
-            objetivos_capturados_temp = []  # Lista temporal para almacenar objetivos capturados en este ciclo
+                
+            # Lista temporal para almacenar objetivos capturados en este ciclo --------------------
+            objetivos_capturados_temp = []  
 
             for objetivo in objetivos:
                 if (posicion_x, posicion_y) == objetivo:
@@ -494,12 +429,6 @@ while True:
                     objetivos.remove((posicion_x, posicion_y))
                     graficos.lastItem = 1
             
-            #primer_indice = direcciones.index(dir)
-
-            # Verifica si no hay más ocurrencias del elemento después del primer índice
-            #if dir not in direcciones[primer_indice + 1:]:
-                #buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), objetivos[0]], direcciones)
-
             # Eliminar objetivos capturados de la lista principal
             objetivos = [objetivo for objetivo in objetivos if objetivo not in objetivos_capturados_temp]
 
@@ -511,29 +440,8 @@ while True:
 
             # Verificar si se han capturado todos los objetivos
             if objetivos_capturados >= len(objetivos):
-
-
                 print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
-
-                # Crear una nueva ventana para la pantalla de victoria
-                pantalla_victoria = pygame.display.set_mode((480, 270))
-
-
-                # Cargar la imagen de la pantalla de victoria
-                pantalla_victoria_img = pygame.image.load('winScreen.png')
-
-                # Dibujar la imagen de la pantalla de victoria en la nueva ventana
-                pantalla_victoria.blit(pantalla_victoria_img, (0, 0))
-
-                #visualizar_camino(mapa, caminos, objetivos)
-
-                # Actualizar la nueva ventana
-                pygame.display.flip()
-                time.sleep(5)
-                pygame.quit()
-                sys.exit()
-
-
+                victoria = True
             
             # Eliminar objetivos capturados de la lista principal
             objetivos = [objetivo for objetivo in objetivos if (posicion_x, posicion_y) != objetivo]
@@ -541,14 +449,21 @@ while True:
             # Verificar si se han capturado todos los objetivos
             if objetivos_capturados == len(objetivos):
                 print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
-                pygame.quit()
-                sys.exit()
 
-            # Limpiar la pantalla
+            # Imagen del ENEMIGO ------------------------------------------------------------------
+            imagen_obstaculo = pygame.image.load(os.path.join('enemigo1', f'android{1 + graficos.enemigo1 % 10}.png'))
+            objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
+
+            if campo_de_juego[posicion_y][posicion_x] == 0:
+                bateria -= 1.0
+            elif campo_de_juego[posicion_y][posicion_x] == 3:
+                bateria -= 1.3
+            
+            # Limpiar la pantalla -----------------------------------------------------------------
             pantalla.fill(BLANCO)
 
             # Dibujar el texto de las vidas en la pantalla
-            texto_vidas = fuente.render(f'Vidas: {vidas}', True, (0, 0, 0))  # color negro en RGB
+            texto_vidas = fuente.render(f'Vidas: {vidas}', True, (0, 0, 0))
             pantalla.blit(texto_vidas, (200, 710))  # Ajusta las coordenadas 
 
             # Dibujar el texto de objetivos capturados en la pantalla
@@ -556,20 +471,14 @@ while True:
             pantalla.blit(texto_objetivos, (80, 710))
 
             # Dibujar el texto de la batería
-            texto_bateria = fuente.render(f"Batería: {0.0 if bateria <= 0.0 else bateria:.1f}", True, (0, 0, 0))  # color negro en RGB
-            pantalla.blit(texto_bateria, (300, 710))  # Ajusta las coordenadas 
+            texto_bateria = fuente.render(f"Batería: {0.0 if bateria <= 0.0 else bateria:.1f}", True, (0, 0, 0))
+            pantalla.blit(texto_bateria, (300, 710))
 
             # Dibujar el texto del estado 
-            texto_esatdo = fuente.render(f"Estado: {estado}", True, (0, 0, 0))  # color negro en RGB
-            pantalla.blit(texto_esatdo, (500, 710))  # Ajusta las coordenadas 
+            texto_esatdo = fuente.render(f"Estado: {estado}", True, (0, 0, 0))
+            pantalla.blit(texto_esatdo, (500, 710))
 
-            # Imagen del ENEMIGO
-            imagen_obstaculo = pygame.image.load(os.path.join('enemigo1', f'android{1 + graficos.enemigo1 % 10}.png'))
-            #imagen_obstaculo = pygame.transform.scale(imagen_obstaculo, (TAMANO_CASILLA * 0.9, TAMANO_CASILLA * 0.9))
-            objetivo_img = pygame.image.load(os.path.join('Objetos', f'c{1 + graficos.enemigo1 % 5}.png'))
-            
-
-            # Desplegar imagenes en cada casilla del mapa
+            # Desplegar imagenes en cada casilla del mapa -----------------------------------------
             for fila in range(CANTIDAD_CASILLAS):
                 for columna in range(CANTIDAD_CASILLAS):
 
@@ -623,38 +532,39 @@ while True:
                         pantalla.blit(piso, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
 
             graficos.enemigo1 += 1
+            
             # Dibujar el monito en la pantalla
             pantalla.blit(monito_img, monito_rect)
 
             # Actualizar la pantalla
             pygame.display.flip()
 
-            # Controlar la velocidad de la ejecución
+            # Velocidad de la ejecución
             pygame.time.Clock().tick(5)
 
             if derrota:
                 time.sleep(2)
-                terminarPorDerrota()
+                terminarJuego(True)
+            elif victoria:
+                time.sleep(2)
+                terminarJuego(False)
 
-
-
-                        #pygame.draw.rect(pantalla, NEGRO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))
-                    #elif :
-                        #pygame.draw.rect(pantalla, ROJO, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA, TAMANO_CASILLA, TAMANO_CASILLA))#el cuadro rojo feo de antes
-                        #pantalla.blit(imagen_obstaculo, (columna * TAMANO_CASILLA, fila * TAMANO_CASILLA))
         else:
             print("La batería se ha acabado")
-
-            time.sleep(5)
-            terminarPorDerrota()            
+            time.sleep(2)
+            terminarJuego(True)            
     
+    # Fin del las direcciones (ciclo For)
+    direcciones = []
+
     if len(objetivos) > 0:
-        nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)
-        direcciones = []
+        nextObj = encontrar_posicion_mas_cercana((posicion_x, posicion_y), objetivos)    
         buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), nextObj], direcciones)
         estado = "Recolectando objetivos"
 
     if len(direcciones) == 0:                
         break
+
+# Fin del juego -----------------------------------------------------------------------------------
 
             
