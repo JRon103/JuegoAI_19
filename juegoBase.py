@@ -7,7 +7,7 @@ import random
 import heapq
 import matplotlib.pyplot as plt
 import numpy as np
-
+from PIL import Image, ImageTk
 '''
     INTELIGENCIA ARTIFICIAL (ENE-JUN 2024 11:00 HRS)
 
@@ -135,26 +135,45 @@ def agregarDirecciones(camino, direcciones):
 
         movimientos.append(paso_actual)
 
-def terminarJuego (derrota):
-
+def terminarJuego(derrota):
+    import pygame
+    from PIL import Image
+    from io import BytesIO
+    
+    # Inicializar Pygame
+    pygame.init()
+    
     # Crear una nueva ventana
-    pantalla_derrota = pygame.display.set_mode((480, 270))
-
-    # Cargar la imagen de la pantalla de derrota o victoria
+    pantalla_derrota = pygame.display.set_mode((1140, 810))
+    
+    # Cargar la imagen de la pantalla de derrota o victoria y redimensionarla
     if derrota:
-        pantalla_derrota_img = pygame.image.load('loseScreen.png')
+        image_path = 'loseScreen.png'
     else:
-        pantalla_derrota_img = pygame.image.load('winScreen.png')
-
+        image_path = 'winScreen.png'
+        
+    image = Image.open(image_path)
+    new_image = image.resize((1140, 810))
+    
+    # Convertir la imagen de Pillow a bytes
+    image_bytes = BytesIO()
+    new_image.save(image_bytes, format='PNG')
+    image_data = image_bytes.getvalue()
+    
+    # Convertir la imagen de Pillow a un formato compatible con Pygame
+    pygame_image = pygame.image.load(BytesIO(image_data))
+    
     # Dibujar la imagen
-    pantalla_derrota.blit(pantalla_derrota_img, (0, 0))
-
+    pantalla_derrota.blit(pygame_image, (0, 0))
+    
     # Actualizar la nueva ventana
     pygame.display.flip()
-    time.sleep(5)
-
+    
+    # Mantener la ventana abierta durante 5 segundos
+    pygame.time.delay(5000)
+    
+    # Finalizar Pygame
     pygame.quit()
-    sys.exit()
 
 # ----------------------------------------------------------------------------------------------- #
 # Características para el juego ----------------------------------------------------------------- #
@@ -239,7 +258,7 @@ for area_bat in area_recarga:
 objetivos = []
 pisoAguaObjetivos = []
 
-while len(objetivos) < 45:
+while len(objetivos) < 25:
     obj_ix = random.randrange(0,15)
     obj_iy = random.randrange(0,15)
 
@@ -309,7 +328,7 @@ while True:
         print("La batería se ha acabado")
         terminarJuego(True)
     elif bateria < 20.0:
-        print("Batería baja. Buscando punto de recarga...")
+        print("Bateria baja. Buscando punto de recarga...")
         direcciones = []
         buscarCamino((posicion_x, posicion_y), [(posicion_x, posicion_y), area_recarga[0]], direcciones)
         recargar = True
@@ -439,16 +458,12 @@ while True:
             objetivos_capturados_temp.clear()
 
             # Verificar si se han capturado todos los objetivos
-            if objetivos_capturados >= len(objetivos):
-                print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
+            if len(objetivos)<=0:
+                print("Felicidades! Has capturado todos los objetivos. Ganaste!")
                 victoria = True
             
             # Eliminar objetivos capturados de la lista principal
             objetivos = [objetivo for objetivo in objetivos if (posicion_x, posicion_y) != objetivo]
-
-            # Verificar si se han capturado todos los objetivos
-            if objetivos_capturados == len(objetivos):
-                print("¡Felicidades! Has capturado todos los objetivos. ¡Ganaste!")
 
             # Imagen del ENEMIGO ------------------------------------------------------------------
             imagen_obstaculo = pygame.image.load(os.path.join('enemigo1', f'android{1 + graficos.enemigo1 % 10}.png'))
@@ -475,8 +490,8 @@ while True:
             pantalla.blit(texto_bateria, (300, 710))
 
             # Dibujar el texto del estado 
-            texto_esatdo = fuente.render(f"Estado: {estado}", True, (0, 0, 0))
-            pantalla.blit(texto_esatdo, (500, 710))
+            texto_estado = fuente.render(f"Estado: {estado}", True, (0, 0, 0))
+            pantalla.blit(texto_estado, (500, 710))
 
             # Desplegar imagenes en cada casilla del mapa -----------------------------------------
             for fila in range(CANTIDAD_CASILLAS):
@@ -566,5 +581,3 @@ while True:
         break
 
 # Fin del juego -----------------------------------------------------------------------------------
-
-            
