@@ -325,8 +325,9 @@ while True:
 
     # Verificar la batería
     if bateria <= 0.0:
-        print("La batería se ha acabado")
-        terminarJuego(True)
+        print("La batería se ha acabado 1")
+        derrota = True
+        break
     elif bateria < 20.0:
         print("Bateria baja. Buscando punto de recarga...")
         direcciones = []
@@ -565,9 +566,9 @@ while True:
                 terminarJuego(False)
 
         else:
-            print("La batería se ha acabado")
-            time.sleep(2)
-            terminarJuego(True)            
+            print("La batería se ha acabado 2")
+            derrota = True
+            break          
     
     # Fin del las direcciones (ciclo For)
     direcciones = []
@@ -579,5 +580,9 @@ while True:
 
     if len(direcciones) == 0:                
         break
+
+if derrota:
+    time.sleep(2)
+    terminarJuego(True)
 
 # Fin del juego -----------------------------------------------------------------------------------
