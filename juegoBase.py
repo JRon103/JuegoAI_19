@@ -74,7 +74,7 @@ def menu():
                 if event.key == pygame.K_1:
                     main()
                 
-                elif event.key == pygame.K_3:
+                elif event.key == pygame.K_2:
                     running = False
 
         show_menu(screen)
