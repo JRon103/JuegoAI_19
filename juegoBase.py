@@ -38,8 +38,51 @@ from PIL import Image, ImageTk
         - La batería dejará de cargarse después del 70%
     
 '''
-
+FPS=30
+# Definir colores
+WHITE = (255, 255, 255)
+CREAM= (248, 222, 129)
+BLACK = (0, 0, 0)
+# Definir dimensiones de la pantalla
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+pygame.init()
 # Clases y Métodos ------------------------------------------------------------------------------ #
+def show_menu(screen):
+    screen.fill(CREAM)
+    font = pygame.font.Font(None, 36)
+    title_text = font.render("Seleccione con el numero del teclado:", True, BLACK)
+    start_text = font.render("1. Iniciar juego", True, BLACK)
+    exit_text = font.render("2. Salir", True, BLACK)
+    
+    screen.blit(title_text, (150, 180))
+    screen.blit(start_text, (200, 250))
+    screen.blit(exit_text, (200, 300))
+    
+    pygame.display.flip()
+def menu():
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Agente Inteligente: Oswi")
+    clock = pygame.time.Clock()
+    running = True
+
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    main()
+                
+                elif event.key == pygame.K_3:
+                    running = False
+
+        show_menu(screen)
+        clock.tick(FPS)
+
+    pygame.quit()
+    sys.exit()
+
 def main():
     class Nodo:
         def __init__(self, estado, padre=None, g=0, h=0):
@@ -588,5 +631,5 @@ def main():
     if derrota:
         time.sleep(2)
         terminarJuego(True)
-main()
+menu()
 # Fin del juego -----------------------------------------------------------------------------------
